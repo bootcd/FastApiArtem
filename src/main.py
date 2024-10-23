@@ -1,15 +1,22 @@
-
+import sys
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 import uvicorn
-from hotels import router as router_hotels
+
+from src.config import settings
+
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.api.hotels import router as router_hotels
+
+print(settings.DB_URL)
 
 app = FastAPI(docs_url=None)
 
 app.include_router(router_hotels)
-
-
+ 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
     return get_swagger_ui_html(
