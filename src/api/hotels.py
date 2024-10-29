@@ -1,7 +1,7 @@
 from fastapi import Query, APIRouter
 from sqlalchemy import select
 
-from database import async_session_maker
+from src.database import async_session_maker
 from src.api.dependencies import PaginationDep
 from src.models.hotels import HotelsORm
 from src.schemas.schemas import Hotel, HotelPATCH
