@@ -1,5 +1,5 @@
 from fastapi import Query, APIRouter
-from sqlalchemy import select
+from sqlalchemy import select, func, insert
 
 from src.database import async_session_maker
 from src.api.dependencies import PaginationDep
@@ -9,23 +9,34 @@ from src.schemas.schemas import Hotel, HotelPATCH
 router = APIRouter(prefix="/hotels", tags=["hotels, Отели"])
 
 @router.post("/")
-def create_hotel(hotel_data: Hotel):
+async def create_hotel(hotel_data: Hotel):
+    async with async_session_maker() as session:
+        statement = insert(HotelsORm).values(**hotel_data.model_dump())
+        await session.execute(statement)
+        await session.commit()
     return {"status": "OK"}
 
 
 @router.get("/")
 async def get_hotels(
         pagination: PaginationDep,
-        id: int | None = Query(None, description="Айдишник"),
+        location: str | None = Query(None, description="Город"),
         title: str | None = Query(None, description="Название отеля"),
 ):
     async with async_session_maker() as session:
-        query = select(HotelsORm).filter_by(id=id, title=title)
+        query = select(HotelsORm)
+        if location:
+            query = query.filter(func.lower(HotelsORm.location).like(f'%{location.lower()}%'))
+        if title:
+            query = query.filter(func.lower(HotelsORm.title).like(f'%{title.lower()}%'))
+        offset = pagination.per_page * (pagination.page - 1)
+        limit = pagination.per_page
+        query = (query
+                 .limit(limit)
+                 .offset(offset)
+                 )
         result = await session.execute(query)
-        hotels = result.all()
-        print(hotels)
-    offset = pagination.per_page * (pagination.page - 1)
-    limit = pagination.per_page
+        hotels = result.scalars().all()
     return hotels
 
 
