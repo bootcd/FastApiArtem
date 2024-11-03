@@ -6,6 +6,12 @@ class Hotel(BaseModel):
     location: str
 
 
+class HotelGET(Hotel):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 class HotelPATCH(BaseModel):
     title: str | None = Field(None)
     location: str | None = Field(None)

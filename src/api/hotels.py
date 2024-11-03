@@ -5,7 +5,7 @@ from src.database import async_session_maker
 from src.api.dependencies import PaginationDep
 from src.models.hotels import HotelsORm
 from src.repositories.hotels import HotelsRepository
-from src.schemas.schemas import Hotel, HotelPATCH
+from src.schemas.schemas import Hotel, HotelPATCH, HotelGET
 
 router = APIRouter(prefix="/hotels", tags=["hotels, Отели"])
 
@@ -32,6 +32,13 @@ async def get_hotels(
                                                                  )
 
     return hotels
+
+
+@router.get("/{hotel_id}")
+async def get_hotel(hotel_id: int):
+    async with async_session_maker() as session:
+        hotel = await HotelsRepository(session).get_one_or_none(hotel_id)
+    return HotelGET.model_validate(hotel) if hotel else None
 
 
 @router.put("/")
