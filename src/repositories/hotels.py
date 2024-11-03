@@ -26,9 +26,5 @@ class HotelsRepository(BaseRepository):
         hotels = result.scalars().all()
         return hotels
 
-    async def add(self, data):
-        statement = insert(self.model).values(**data.model_dump()).returning(self.model)
-        result = await self.session.execute(statement)
-        return result.scalars().one()
 
 

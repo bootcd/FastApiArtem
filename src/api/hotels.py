@@ -34,19 +34,45 @@ async def get_hotels(
     return hotels
 
 
-@router.put("/hotels/{hotel_id}")
-def put_hotel(hotel_id: int, hotel_data: Hotel):
+@router.put("/")
+async def put_hotel(hotel_data: Hotel,
+                    hotel_id: int | None = None,
+                    location: str | None = None,
+                    title: str | None = None
+                    ):
+    filter_by = {}
+    if hotel_id:
+        filter_by['id'] = hotel_id
+    if title:
+        filter_by['title'] = title
+    if location:
+        filter_by['location'] = location
+    async with async_session_maker() as session:
+        await HotelsRepository(session).edit(hotel_data, **filter_by)
+        await session.commit()
     return {"status": "OK",
             }
+
+
+@router.delete("/")
+async def delete_hotel(hotel_id: int | None = None,
+                       title: str | None = None,
+                       location: str | None = None):
+    filter_by = {}
+    if hotel_id:
+        filter_by['id'] = hotel_id
+    if title:
+        filter_by['title'] = title
+    if location:
+        filter_by['location'] = location
+    async with async_session_maker() as session:
+        await HotelsRepository(session).delete(**filter_by)
+        await session.commit()
+    return {"status": "OK"}
 
 
 @router.patch("/{hotel_id}")
 def patch_hotel(hotel_id: int,
                 hotel_data: HotelPATCH
                 ):
-    return {"status": "OK"}
-
-
-@router.delete("/{hotel_id}")
-def delete_hotel(hotel_id: int):
     return {"status": "OK"}
