@@ -9,7 +9,7 @@ router = APIRouter(prefix="/auth")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 @router.post("/register")
-async def create_hotel(user_data: UserPOST):
+async def register_user(user_data: UserPOST):
     async with async_session_maker() as session:
         user_data = User(email=user_data.email, password=pwd_context.hash(user_data.password))
         await UsersRepository(session=session).add(user_data)
