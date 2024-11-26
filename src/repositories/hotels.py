@@ -2,10 +2,12 @@ from sqlalchemy import select, func, insert
 
 from src.models.hotels import HotelsORm
 from src.repositories.base import BaseRepository
+from src.schemas.hotels import Hotel
 
 
 class HotelsRepository(BaseRepository):
     model = HotelsORm
+    scheme = Hotel
 
     async def get_all(self,
                       offset,
