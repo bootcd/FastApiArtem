@@ -35,7 +35,7 @@ async def get_hotels(
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int):
     async with async_session_maker() as session:
-        hotel = await HotelsRepository(session).get_one_or_none(hotel_id)
+        hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
     return HotelGET.model_validate(hotel) if hotel else None
 
 

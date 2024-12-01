@@ -1,14 +1,13 @@
 from fastapi import APIRouter, HTTPException
-from starlette.requests import Request
 from starlette.responses import Response
 
 from src.api.dependencies import UserIdDep
 from src.database import async_session_maker
 from src.repositories.users import UsersRepository
-from src.schemas.users import UserPOST, User
+from src.schemas.users import UserPOST, User, UserWithHashedPassword
 from src.services.auth import AuthService
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=["auth, Аутентификация и авторизация"])
 
 
 @router.post("/register")
@@ -41,6 +40,7 @@ async def get_me(
 ):
     async with async_session_maker() as session:
         user = await UsersRepository(session).get_one_or_none(id=user_id)
+        user = UserWithHashedPassword.model_validate(user)
         return user
 
 
@@ -50,3 +50,4 @@ async def logout_user(
 ):
     response.delete_cookie('access_token')
     return {"status": "OK"}
+

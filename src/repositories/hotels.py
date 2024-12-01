@@ -7,7 +7,6 @@ from src.schemas.hotels import Hotel
 
 class HotelsRepository(BaseRepository):
     model = HotelsORm
-    scheme = Hotel
 
     async def get_all(self,
                       offset,
