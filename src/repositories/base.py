@@ -4,7 +4,7 @@ from sqlalchemy import select, insert, delete, update
 
 class BaseRepository:
     model = None
-    scheme = None
+    schema = None
 
     def __init__(self, session):
         self.session = session
@@ -12,12 +12,14 @@ class BaseRepository:
     async def get_all(self, *args, **kwargs):
         query = select(self.model)
         result = await self.session.execute(query)
-        return result.scalars().all()
+        result = result.scalars().all()
+        return [self.schema.model_validate(instance) for instance in result]
 
     async def get_one_or_none(self, **filters) -> BaseModel | None:
         query = select(self.model).filter_by(**filters)
         result = await self.session.execute(query)
-        return result.scalars().one_or_none()
+        result = result.scalars().one_or_none()
+        return self.schema.model_validate(result)
 
     async def add(self, data: BaseModel):
         statement = insert(self.model).values(**data.model_dump()).returning(self.model)

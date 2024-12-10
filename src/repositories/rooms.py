@@ -4,10 +4,12 @@ from sqlalchemy import select, func
 
 from src.models.rooms import RoomsOrm
 from src.repositories.base import BaseRepository
+from src.schemas.rooms import RoomGET
 
 
 class RoomsRepository(BaseRepository):
     model = RoomsOrm
+    schema = RoomGET
 
     async def get_all(self,
                       hotel_id,
