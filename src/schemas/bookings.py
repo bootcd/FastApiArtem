@@ -1,12 +1,14 @@
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
+
 class BookingPost(BaseModel):
     date_from: date
     date_to: date
-    price: int
+    room_id: int
+
 class Booking(BookingPost):
-    hotel_id: int
     room_id: int
     user_id: int
     date_from: date
@@ -16,3 +18,5 @@ class Booking(BookingPost):
 class BookingGet(Booking):
     id: int
     total_cost: int
+
+    model_config = ConfigDict(from_attributes=True)
