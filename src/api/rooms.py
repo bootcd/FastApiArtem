@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Query, Body
 from starlette.exceptions import HTTPException
 
@@ -46,16 +48,11 @@ async def create_room(
 async def get_rooms(
         db: DBDep,
         hotel_id: int | None,
-        title: str | None = Query(None, description="Название"),
-        price: int | None = Query(None, description="Цена"),
-        description: str | None = Query(None, description="Описание")
+        date_from: date = Query(example="2025-05-01"),
+        date_to: date = Query(example="2025-05-25")
 ):
-    rooms = await db.rooms.get_all(hotel_id=hotel_id,
-                                   title=title,
-                                   price=price,
-                                   description=description
-                                   )
-    rooms = [RoomGET.model_validate(rooms) for rooms in rooms] if rooms else None
+    rooms = await db.rooms.get_filtered_by_date(hotel_id=hotel_id, date_from=date_from, date_to=date_to)
+    print(rooms)
     return {"status": "OK", "data": rooms}
 
 

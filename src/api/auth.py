@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
 from src.api.dependencies import UserIdDep, DBDep
-from src.schemas.users import UserPOST, User, UserWithHashedPassword
+from src.schemas.users import UserPOST, UserGET, UserWithHashedPassword
 from src.services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth, Аутентификация и авторизация"])
@@ -13,7 +13,7 @@ async def register_user(
         db: DBDep,
         user_data: UserPOST
 ):
-    user_data = User(email=user_data.email, password=AuthService.pwd_context.hash(user_data.password))
+    user_data = UserPOST(email=user_data.email, password=AuthService.pwd_context.hash(user_data.password))
     await db.users.add(user_data)
     await db.commit()
     return {"status": "OK"}

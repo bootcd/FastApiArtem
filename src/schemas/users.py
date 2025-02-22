@@ -6,14 +6,14 @@ class UserPOST(BaseModel):
     password: str
 
 
-class User(BaseModel):
+class UserGET(BaseModel):
     email: EmailStr
     id: int
 
     class Config:
         from_attributes = True
 
-class UserWithHashedPassword(User):
+class UserWithHashedPassword(UserGET):
     password: str
 
     class Config:

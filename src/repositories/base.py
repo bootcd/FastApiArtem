@@ -15,6 +15,18 @@ class BaseRepository:
         result = result.scalars().all()
         return [self.schema.model_validate(instance) for instance in result]
 
+    async def get_filtered(self, *filter, **filter_by):
+        query = (
+            select(self.model)
+            .filter(*filter)
+            .filter_by(**filter_by)
+        )
+        result = await self.session.execute(query)
+        result = result.scalars().all()
+        return [self.schema.model_validate(instance) for instance in result]
+
+
+
     async def get_one_or_none(self, **filters) -> BaseModel | None:
         query = select(self.model).filter_by(**filters)
         result = await self.session.execute(query)
