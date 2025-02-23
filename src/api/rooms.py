@@ -52,7 +52,6 @@ async def get_rooms(
         date_to: date = Query(example="2025-05-25")
 ):
     rooms = await db.rooms.get_filtered_by_date(hotel_id=hotel_id, date_from=date_from, date_to=date_to)
-    print(rooms)
     return {"status": "OK", "data": rooms}
 
 
