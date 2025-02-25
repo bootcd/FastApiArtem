@@ -1,7 +1,6 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict, Field
-
 
 class Room(BaseModel):
     title:          str
@@ -9,20 +8,19 @@ class Room(BaseModel):
     quantity:       int
     price:          int
     hotel_id:       int
-
     model_config = ConfigDict(from_attributes=True)
 
-class RoomGET(Room):
+
+class RoomAddRequest(Room):
+
+    facilities_ids: Optional[List[int]] = None
+
+
+class RoomGET(RoomAddRequest):
     id: int
 
-
-class RoomUpdate(BaseModel):
-    title:          str
-    description:    str
-    quantity:       int
-    price:          int = Field(gt=0)
-
-    model_config = ConfigDict(from_attributes=True)
+class RoomUpdate(RoomAddRequest):
+    price: int = Field(gt=0)
 
 class RoomPatch(BaseModel):
     title:          str | None = Field(None)

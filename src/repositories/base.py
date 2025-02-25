@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
 
@@ -38,10 +40,26 @@ class BaseRepository:
         result = await self.session.execute(statement)
         return result.scalars().one()
 
+    async def add_bulk(self, data: List[BaseModel]):
+        print(self.model, data)
+        statement = insert(self.model).values([item.model_dump() for item in data])
+        print(statement)
+        await self.session.execute(statement)
+
+
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         statement = update(self.model).filter_by(**filter_by).values(**data.model_dump(exclude_unset=exclude_unset))
         await self.session.execute(statement)
 
-    async def delete(self, **filter_by) -> None:
-        statement = delete(self.model).filter_by(**filter_by)
+    async def delete(self, *filter, **filter_by) -> None:
+        statement = (
+            delete(self.model)
+            .filter(
+                *filter
+            )
+            .filter_by(
+                **filter_by
+            )
+        )
+        print(statement.compile())
         await self.session.execute(statement)
