@@ -41,9 +41,7 @@ class BaseRepository:
         return result.scalars().one()
 
     async def add_bulk(self, data: List[BaseModel]):
-        print(self.model, data)
         statement = insert(self.model).values([item.model_dump() for item in data])
-        print(statement)
         await self.session.execute(statement)
 
 
@@ -61,5 +59,4 @@ class BaseRepository:
                 **filter_by
             )
         )
-        print(statement.compile())
         await self.session.execute(statement)

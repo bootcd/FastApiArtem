@@ -2,6 +2,9 @@ from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.schemas.facilities import FacilityGet
+
+
 class Room(BaseModel):
     title:          str
     description:    Optional[str] = None
@@ -29,3 +32,9 @@ class RoomPatch(BaseModel):
     price:          int | None = Field(None, gt=0)
 
     model_config = ConfigDict(from_attributes=True)
+
+class RoomPatchRequest(RoomPatch):
+    facilities_ids: List[int] = None
+
+class RoomWithRels(Room):
+    facilities: List[FacilityGet]

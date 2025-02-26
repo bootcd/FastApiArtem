@@ -1,13 +1,10 @@
 from datetime import date
 
 from fastapi import APIRouter, Query, Body
-from starlette.exceptions import HTTPException
 
 from src.api.dependencies import DBDep
-from src.database import async_session_maker
-from src.repositories.rooms import RoomsRepository
 from src.schemas.facilities import RoomsFacility
-from src.schemas.rooms import Room, RoomGET, RoomUpdate, RoomPatch, RoomAddRequest
+from src.schemas.rooms import Room, RoomUpdate, RoomPatch, RoomAddRequest, RoomGET, RoomPatchRequest
 
 router = APIRouter(prefix="/hotels", tags=["rooms, Номера"])
 
@@ -71,8 +68,8 @@ async def get_room(
         hotel_id: int,
         room_id: int
 ):
-    room = await db.rooms.get_one_or_none(id=room_id)
-    return RoomGET.model_validate(room) if room else None
+    room = await db.rooms.get_one_with_rels(room_id=room_id)
+    return {"status": "OK", "data": room}
 
 
 @router.put("/{hotel_id}/rooms/{room_id}")
@@ -82,14 +79,7 @@ async def update_room(
         db: DBDep,
         room_data: RoomUpdate
 ):
-    facilities_ids = [fa.facility_id for fa in await db.rooms_facilities.get_all(room_id=room_id)]
-    fa_ids_from_data = room_data.facilities_ids
-    fa_ids_for_delete = set(facilities_ids) - set(fa_ids_from_data)
-    fa_ids_for_add = set(fa_ids_from_data) - set(facilities_ids)
-    rooms_facility_data = [RoomsFacility(room_id=room_id, facility_id=facility_id) for facility_id in fa_ids_for_add]
-    await db.rooms_facilities.delete(db.rooms_facilities.model.facility_id.in_(fa_ids_for_delete), room_id=room_id)
-    await db.rooms_facilities.add_bulk(data=rooms_facility_data)
-    await db.rooms.edit(data=RoomPatch.model_validate(room_data), id=room_id)
+    await db.rooms_facilities.update_rooms_facilities(room_id=room_id, facilities_ids=room_data.facilities_ids)
     await db.commit()
     return {"status": "OK"}
 
@@ -99,9 +89,13 @@ async def partial_update_room(
         hotel_id: int,
         room_id: int,
         db: DBDep,
-        room_data: RoomPatch
+        room_data: RoomPatchRequest
 ):
-    await db.rooms.edit(data=room_data, exclude_unset=True, id=room_id)
+    _room_data_dict = room_data.model_dump(exclude_unset=True)
+    _room_data = RoomPatch.model_validate(room_data.model_dump())
+    await db.rooms.edit(data=_room_data, exclude_unset=True, id=room_id)
+    if "facilities_ids" in _room_data_dict:
+        await db.rooms_facilities.update_rooms_facilities(room_id=room_id, facilities_ids=_room_data_dict["facilities_ids"])
     await db.commit()
     return {"status": "OK"}
 
