@@ -16,10 +16,10 @@ class RoomsRepository(BaseRepository):
     schema = RoomGET
 
     async def get_all(self,
-                      hotel_id,
-                      title,
-                      price,
-                      description
+                      hotel_id = None,
+                      title = None,
+                      price = None,
+                      description = None
                       ):
         query = select(RoomsOrm)
         if title:

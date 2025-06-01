@@ -33,7 +33,7 @@ class BaseRepository:
         query = select(self.model).filter_by(**filters)
         result = await self.session.execute(query)
         result = result.scalars().one_or_none()
-        return self.schema.model_validate(result)
+        return self.schema.model_validate(result) if result else None
 
     async def add(self, data: BaseModel):
         statement = insert(self.model).values(**data.model_dump()).returning(self.model)

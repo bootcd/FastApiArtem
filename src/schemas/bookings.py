@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -14,6 +15,13 @@ class Booking(BookingPost):
     date_from: date
     date_to: date
     price: int
+
+class BookingPut(BookingPost):
+    room_id: Optional[int] = None
+    user_id: Optional[int] = None
+    date_from: Optional[date] = None
+    date_to: Optional[date] = None
+    price: Optional[int] = None
 
 class BookingGet(Booking):
     id: int
