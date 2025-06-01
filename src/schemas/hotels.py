@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class Hotel(BaseModel):
@@ -9,8 +9,7 @@ class Hotel(BaseModel):
 class HotelGET(Hotel):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class HotelPATCH(BaseModel):
     title: str | None = Field(None)

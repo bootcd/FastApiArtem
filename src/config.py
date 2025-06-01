@@ -1,9 +1,11 @@
 from pathlib import Path
 
+from dotenv.variables import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    MODE:       str = ["LOCAL", "TEST", "DEV", "PROD"]
     DB_NAME:    str
     DB_PORT:    int
     DB_PASS:    str
