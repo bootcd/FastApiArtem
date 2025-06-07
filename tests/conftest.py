@@ -72,16 +72,7 @@ async def authed_ac(ac, register_mew_user):
 
     assert response.cookies
     assert response.cookies.get("access_token")
-    token = response.cookies.get("access_token")
-    decoded_jwt = AuthService().decode_token(token=token)
-    user_id = decoded_jwt.get("id")
-    response = await ac.get(
-        url="/auth/me",
-        params={"user_id": user_id}
-    )
-
-    assert response.status_code == 200
-    yield response.content
+    yield ac
 
 
 app.dependency_overrides[get_db] = get_db_null_pull
