@@ -14,7 +14,7 @@ async def add_booking(
     room = await db.rooms.get_one_or_none(id=booking.room_id)
     _booking_data = Booking(**booking.model_dump(), user_id=user_id, price=room.price)
     try:
-        booking = await db.bookings.add_booking(rooms_repo = db.rooms, room=room, booking_data=_booking_data)
+        booking = await db.bookings.add_booking(room=room, booking_data=_booking_data)
     except Exception as e:
         return {"status": "error", "message": str(e)}
     else:
