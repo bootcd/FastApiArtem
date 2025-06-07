@@ -36,13 +36,11 @@ def room_ids_for_booking(
             query=query.filter_by(hotel_id=hotel_id)
         room_ids_from_hotel = query.subquery(name="room_ids_from_hotel")
 
-
-
         room_ids_to_get = (
             select(rooms_left_table.c.room_id)
             .filter(
                 rooms_left_table.c.rooms_left > 0,
-                rooms_left_table.c.room_id.in_(room_ids_from_hotel)
+                rooms_left_table.c.room_id.in_(select(room_ids_from_hotel.c.id))
             )
         )
 

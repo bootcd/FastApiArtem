@@ -22,8 +22,10 @@ class RoomAddRequest(Room):
 class RoomGET(RoomAddRequest):
     id: int
 
+
 class RoomUpdate(RoomAddRequest):
     price: int = Field(gt=0)
+
 
 class RoomPatch(BaseModel):
     title:          str | None = Field(None)
@@ -33,8 +35,10 @@ class RoomPatch(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class RoomPatchRequest(RoomPatch):
     facilities_ids: List[int] = None
 
-class RoomWithRels(Room):
+
+class RoomWithRels(RoomGET):
     facilities: List[FacilityGet]

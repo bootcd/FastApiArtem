@@ -63,15 +63,14 @@ async def register_mew_user(ac, setup_database):
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 async def authed_ac(ac, register_mew_user):
-    response = await ac.post(
+    await ac.post(
         "/auth/login",
         json={"email": "foobar@foobar.com", "password": "foobar"}
     )
 
-    assert response.cookies
-    assert response.cookies.get("access_token")
+    assert ac.cookies["access_token"]
     yield ac
 
 

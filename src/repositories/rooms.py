@@ -1,10 +1,8 @@
 from datetime import date
-from typing import List
 
 from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 
-from src.models.bookings import BookingsOrm
 from src.models.rooms import RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.utils import room_ids_for_booking
