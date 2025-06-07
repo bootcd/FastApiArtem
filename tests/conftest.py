@@ -11,6 +11,7 @@ from src.schemas.facilities import Facility
 from src.schemas.hotels import Hotel
 from src.schemas.rooms import Room
 from src.schemas.users import UserPOST
+from src.services.auth import AuthService
 from src.utils.db_manager import DBManager
 
 
@@ -47,14 +48,40 @@ async def setup_database():
     with open("tests/mock_facilities.json", "r", encoding="utf-8") as f:
         _facilities = [Facility(**facility) for facility in json.load(f)]
 
-    user = {"email": "foobar@fonar.com", "password": "foobar"}
-
     async with DBManager(session=async_session_maker_null_pull) as db_:
         await db_.hotels.add_bulk(data=_hotels)
         await db_.rooms.add_bulk(data=_rooms)
         await db_.facilities.add_bulk(data=_facilities)
-        await db_.users.add(data=UserPOST(**user))
         await db_.commit()
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def register_mew_user(ac, setup_database):
+    await ac.post(
+        "/auth/register",
+        json={"email": "foobar@foobar.com", "password": "foobar"}
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def authed_ac(ac, register_mew_user):
+    response = await ac.post(
+        "/auth/login",
+        json={"email": "foobar@foobar.com", "password": "foobar"}
+    )
+
+    assert response.cookies
+    assert response.cookies.get("access_token")
+    token = response.cookies.get("access_token")
+    decoded_jwt = AuthService().decode_token(token=token)
+    user_id = decoded_jwt.get("id")
+    response = await ac.get(
+        url="/auth/me",
+        params={"user_id": user_id}
+    )
+
+    assert response.status_code == 200
+    yield response.content
 
 
 app.dependency_overrides[get_db] = get_db_null_pull

@@ -27,14 +27,14 @@ async def login_user(
 ):
     user = await db.users.get_user_with_hashed_password(email=user_data.email)
     if not user:
-        raise HTTPException(status_code=401, detail=f"Пользователь с {user_data.email} не зарегестрирован.")
+        raise HTTPException(status_code=401, detail=f"Пользователь с {user_data.email} не зарегистрирован.")
     if not AuthService().verify_password(user_data.password, user.password):
         raise HTTPException(status_code=401, detail="Неверный пароль")
     access_token = AuthService().create_access_token({'id': user.id})
     response.set_cookie('access_token', access_token)
 
 
-@router.post("/me")
+@router.get("/me")
 async def get_me(
         db: DBDep,
         user_id: UserIdDep
