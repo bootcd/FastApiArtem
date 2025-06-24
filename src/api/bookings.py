@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+
+from fastapi import APIRouter, HTTPException
 
 from src.api.dependencies import DBDep, UserIdDep
 from src.schemas.bookings import Booking, BookingPost
@@ -16,11 +17,11 @@ async def add_booking(
     try:
         booking = await db.bookings.add_booking(room=room, booking_data=_booking_data)
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        raise HTTPException(status_code=500)
     else:
         await db.commit()
 
-    return {"booking": booking}
+    return {"status": "ok", "data": booking}
 
 
 @router.get("/")
@@ -36,7 +37,6 @@ async def get_bookings_me(
         db: DBDep,
         user_id: UserIdDep
 ):
-    print(user_id)
     bookings = await db.bookings.get_all(user_id=user_id)
     return {"booking": bookings}
 

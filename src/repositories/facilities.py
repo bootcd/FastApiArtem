@@ -15,28 +15,20 @@ class RoomsFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesOrm
     schema = RoomsFacilityGet
 
-
-
     async def update_rooms_facilities(self, room_id, facilities_ids):
 
         query = select(self.model.facility_id).filter_by(room_id=room_id)
         result = await self.session.execute(query)
         current_facilities_ids = result.scalars().all()
-
-
-
-
         ids_to_delete = list(set(current_facilities_ids) - set(facilities_ids))
         ids_to_insert = list(set(facilities_ids) - set(current_facilities_ids))
 
-        print(ids_to_delete)
         if ids_to_delete:
             statement = delete(self.model).filter(
                 self.model.room_id == room_id,
                 self.model.facility_id.in_(ids_to_delete),
             )
 
-            print("ddd---->", statement.compile())
             await self.session.execute(statement)
 
         if ids_to_insert:

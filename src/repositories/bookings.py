@@ -1,6 +1,5 @@
 from src.models.bookings import BookingsOrm
 from src.repositories.base import BaseRepository
-from src.repositories.rooms import RoomsRepository
 from src.repositories.utils import room_ids_for_booking
 from src.schemas.bookings import BookingGet, Booking
 from src.schemas.rooms import RoomGET
@@ -21,7 +20,6 @@ class BookingsRepository(BaseRepository):
         result = await self.session.execute(rooms_to_booking_query)
         rooms_to_booking_ids: list[int] = result.scalars().all()
         room_id: int = room.id
-
         if room_id not in rooms_to_booking_ids:
             raise Exception("Нет таких свободных номеров на эти даты.")
 

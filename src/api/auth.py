@@ -14,8 +14,12 @@ async def register_user(
         user_data: UserPOST
 ):
     user_data = UserPOST(email=user_data.email, password=AuthService.pwd_context.hash(user_data.password))
-    await db.users.add(user_data)
-    await db.commit()
+    try:
+        await db.users.add(user_data)
+    except Exception as e:
+        raise HTTPException(status_code=500)
+    else:
+        await db.commit()
     return {"status": "OK"}
 
 
@@ -41,7 +45,7 @@ async def get_me(
 ):
     user = await db.users.get_one_or_none(id=user_id)
     user = UserWithHashedPassword.model_validate(user)
-    return user
+    return {"status": "ok", "data": user}
 
 
 @router.get("/logout")

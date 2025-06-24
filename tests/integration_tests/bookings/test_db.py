@@ -3,7 +3,7 @@ from src.schemas.bookings import Booking, BookingGet, BookingPut
 from src.utils.db_manager import DBManager
 
 
-async def test_add_booking(db: DBManager):
+async def test_crud_booking(db: DBManager):
     user_id = (await db.users.get_all())[0].id
     room_id = (await db.rooms.get_all())[0].id
 
@@ -15,7 +15,7 @@ async def test_add_booking(db: DBManager):
         price=1000
     )
 
-    # CREATE
+    #CREATE
     booking = await db.bookings.add(data=booking_data)
 
     #READ

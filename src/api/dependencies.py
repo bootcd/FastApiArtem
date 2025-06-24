@@ -11,7 +11,7 @@ from src.utils.db_manager import DBManager
 
 
 class PaginationParams(BaseModel):
-    page: Annotated[int | None, Query(1, description="Сраница")]
+    page: Annotated[int | None, Query(1, description="Страница")]
     per_page: Annotated[int | None, Query(3, description="Количество отелей на 1 странице")]
 
 
