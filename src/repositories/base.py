@@ -1,7 +1,10 @@
 from typing import List
-
+from asyncpg.exceptions import UniqueViolationError
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
+from sqlalchemy.exc import NoResultFound, IntegrityError
+
+from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException
 
 
 class BaseRepository:
@@ -27,17 +30,27 @@ class BaseRepository:
         result = result.scalars().all()
         return [self.schema.model_validate(instance) for instance in result]
 
-
-
     async def get_one_or_none(self, **filters) -> BaseModel | None:
         query = select(self.model).filter_by(**filters)
         result = await self.session.execute(query)
         result = result.scalars().one_or_none()
         return self.schema.model_validate(result) if result else None
 
+    async def get_one(self, **filters) -> BaseModel:
+        query = select(self.model).filter_by(**filters)
+        result = await self.session.execute(query)
+        try:
+            result = result.scalar_one()
+        except NoResultFound:
+            raise ObjectNotFoundException
+        return self.schema.model_validate(result)
+
     async def add(self, data: BaseModel):
         statement = insert(self.model).values(**data.model_dump()).returning(self.model)
-        result = await self.session.execute(statement)
+        try:
+            result = await self.session.execute(statement)
+        except IntegrityError:
+            raise ObjectAlreadyExistsException
         return result.scalars().one()
 
     async def add_bulk(self, data: List[BaseModel]):

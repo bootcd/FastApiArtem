@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
 from src.api.dependencies import UserIdDep, DBDep
+from src.exceptions import ObjectAlreadyExistsException
 from src.schemas.users import UserPOST, UserGET, UserWithHashedPassword
 from src.services.auth import AuthService
 
@@ -16,10 +17,9 @@ async def register_user(
     user_data = UserPOST(email=user_data.email, password=AuthService.pwd_context.hash(user_data.password))
     try:
         await db.users.add(user_data)
-    except Exception as e:
-        raise HTTPException(status_code=500)
-    else:
         await db.commit()
+    except ObjectAlreadyExistsException:
+        raise HTTPException(status_code=409, detail="Такой пользователь уже зарегистрирован")
     return {"status": "OK"}
 
 

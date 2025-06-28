@@ -1,8 +1,9 @@
 from datetime import date
 
-from fastapi import Query, APIRouter
+from fastapi import Query, APIRouter, HTTPException
 
 from src.api.dependencies import PaginationDep, DBDep
+from src.exceptions import ObjectNotFoundException
 from src.schemas.hotels import Hotel, HotelPATCH, HotelGET
 
 router = APIRouter(prefix="/hotels", tags=["hotels, Отели"])
@@ -44,7 +45,10 @@ async def get_hotel(
         db: DBDep,
         hotel_id: int
 ):
-    hotel = await db.hotels.get_one_or_none(id=hotel_id)
+    try:
+        hotel = await db.hotels.get_one(id=hotel_id)
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=404, detail="Отель не найден")
     return HotelGET.model_validate(hotel) if hotel else None
 
 

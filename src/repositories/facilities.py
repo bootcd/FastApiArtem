@@ -16,7 +16,6 @@ class RoomsFacilitiesRepository(BaseRepository):
     schema = RoomsFacilityGet
 
     async def update_rooms_facilities(self, room_id, facilities_ids):
-
         query = select(self.model.facility_id).filter_by(room_id=room_id)
         result = await self.session.execute(query)
         current_facilities_ids = result.scalars().all()
