@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 
-from src.exceptions import ObjectNotFoundException, WrongBookingDatesExceptions
+from src.exceptions import ObjectNotFoundException
 from src.models.rooms import RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.utils import room_ids_for_booking
@@ -40,8 +40,7 @@ class RoomsRepository(BaseRepository):
             date_from: date,
             date_to: date,
     ):
-        if date_to <= date_from:
-            raise WrongBookingDatesExceptions
+
         room_ids_to_get = room_ids_for_booking(
             hotel_id=hotel_id,
             date_from=date_from,
@@ -60,13 +59,17 @@ class RoomsRepository(BaseRepository):
         return [RoomWithRels.model_validate(room) for room in rooms]
 
 
-    async def get_one_with_rels(self, room_id):
+    async def get_one_with_rels(self, room_id: int, hotel_id: int):
         query = (
             select(self.model)
             .options(
                 joinedload(self.model.facilities)
             )
-            .filter(RoomsOrm.id == room_id))
+            .filter(
+                RoomsOrm.id == room_id,
+                RoomsOrm.hotel_id == hotel_id
+            )
+        )
 
         result = await self.session.execute(query)
         room = result.unique().scalar_one_or_none()

@@ -1,4 +1,5 @@
 import pytest
+from pydantic import BaseModel
 
 from src.config import settings
 from src.database import async_session_maker_null_pull
@@ -11,7 +12,7 @@ from src.utils.db_manager import DBManager
     (1, "2024-08-01", "2024-08-10", 200),
     (1, "2024-08-01", "2024-08-10", 200),
     (1, "2024-08-01", "2024-08-10", 200),
-    (1, "2024-08-01", "2024-08-12", 500),
+    (1, "2024-08-01", "2024-08-12", 409),
     (1, "2024-09-01", "2024-09-12", 200),
 ]
 )
@@ -28,11 +29,10 @@ async def test_add_booking(
         }
     )
     assert response.status_code == status_code
+    res = response.json()
+    assert isinstance(res, dict)
     if status_code == 200:
-        res = response.json()
-        assert isinstance(res, dict)
-        assert res["status"] == "ok"
-        assert "data" in res
+        assert res["room_id"] == room_id
 
 
 @pytest.fixture(scope="session")
@@ -68,4 +68,4 @@ async def test_add_and_get_my_booking(
     me_response = await authed_ac.get("/bookings/me")
     assert me_response.status_code == 200
     res = me_response.json()
-    assert len(res["booking"]) == bookings_quantity
+    assert len(res) == bookings_quantity

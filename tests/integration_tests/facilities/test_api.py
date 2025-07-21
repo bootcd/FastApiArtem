@@ -5,7 +5,7 @@ async def test_api_facilities_get_all(ac: AsyncClient):
     response = await ac.get(
         "/facilities/",
     )
-    facilities = response.json().get("data")
+    facilities = response.json()
 
     mock_facility = {"id": 1, "title": "Интернет"}
 
@@ -22,7 +22,7 @@ async def test_api_facilities_add(ac: AsyncClient):
         json = {"title": title}
     )
 
-    new_facility_data = response.json().get("data")
+    new_facility_data = response.json()
 
     assert response.status_code == 200
     assert new_facility_data

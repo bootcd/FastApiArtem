@@ -7,7 +7,7 @@ import pytest
         ("vasyan@mail.ru", "12345", 200),
         ("vasyan1@mail.ru", "12345", 200),
         ("vasyan2@mail.ru", "12345", 200),
-        ("vasyan2@mail.ru", "123453", 500)
+        ("vasyan2@mail.ru", "123453", 409)
     ]
 )
 
@@ -40,7 +40,7 @@ async def test_me(ac):
     me_response = await ac.get("/auth/me")
     assert me_response.status_code == 200
     res = me_response.json()
-    assert res["data"]["email"] == "vasyan@mail.ru"
+    assert res["email"] == "vasyan@mail.ru"
 
 async def test_logout(ac):
     logout_response = await ac.get("/auth/logout")

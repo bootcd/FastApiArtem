@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from starlette.responses import Response
 
 from src.api.dependencies import UserIdDep, DBDep
-from src.exceptions import ObjectAlreadyExistsException
-from src.schemas.users import UserPOST, UserGET, UserWithHashedPassword
+from src.exceptions import UserAlreadyExistsException, UserAlreadyExistsHTTPException, UserNotFountException, \
+    UserNotFountHTTPException, UserWrongPasswordException, UserWrongPasswordHTTPException
+from src.schemas.users import UserPOST
 from src.services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth, Аутентификация и авторизация"])
@@ -14,13 +15,11 @@ async def register_user(
         db: DBDep,
         user_data: UserPOST
 ):
-    user_data = UserPOST(email=user_data.email, password=AuthService.pwd_context.hash(user_data.password))
     try:
-        await db.users.add(user_data)
-        await db.commit()
-    except ObjectAlreadyExistsException:
-        raise HTTPException(status_code=409, detail="Такой пользователь уже зарегистрирован")
-    return {"status": "OK"}
+        await AuthService(db).register_user(user_data)
+        return {"status": "OK"}
+    except UserAlreadyExistsException:
+        raise UserAlreadyExistsHTTPException
 
 
 @router.post("/login")
@@ -29,13 +28,15 @@ async def login_user(
         user_data: UserPOST,
         response: Response
 ):
-    user = await db.users.get_user_with_hashed_password(email=user_data.email)
-    if not user:
-        raise HTTPException(status_code=401, detail=f"Пользователь с {user_data.email} не зарегистрирован.")
-    if not AuthService().verify_password(user_data.password, user.password):
-        raise HTTPException(status_code=401, detail="Неверный пароль")
-    access_token = AuthService().create_access_token({'id': user.id})
-    response.set_cookie('access_token', access_token)
+    try:
+        access_token = await AuthService(db).login_user(user_data)
+        response.set_cookie('access_token', access_token)
+    except UserNotFountException:
+        raise UserNotFountHTTPException
+
+    except UserWrongPasswordException:
+        raise UserWrongPasswordHTTPException
+
 
 
 @router.get("/me")
@@ -43,9 +44,10 @@ async def get_me(
         db: DBDep,
         user_id: UserIdDep
 ):
-    user = await db.users.get_one_or_none(id=user_id)
-    user = UserWithHashedPassword.model_validate(user)
-    return {"status": "ok", "data": user}
+    try:
+        return await AuthService(db).get_me(user_id)
+    except UserNotFountException:
+        raise UserNotFountHTTPException
 
 
 @router.get("/logout")
